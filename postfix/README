@@ -1,0 +1,39 @@
+README
+Changes on /etc/postfix/main.cf:
+
+< myhostname = host.example.com 
+> #myhostname = host.domain.tld
+
+< mydomain = example.com 
+> #mydomain = domain.tld
+
+< myorigin = $myhostname
+> #myorigin = $myhostname
+
+< inet_interfaces = all
+> #inet_interfaces = all
+
+< #inet_interfaces = localhost
+> inet_interfaces = localhost
+
+< mynetworks = 127.0.0.0/8,32
+> #mynetworks = 168.100.189.0/28, 127.0.0.0/8
+
+< relay_domains = $mydestination
+> #relay_domains = $mydestination
+
+< home_mailbox = Maildir/
+> #home_mailbox = Maildir/
+
+Add group 'postdrop' on localhost:
+$  groupadd postdrop
+
+Run check on postfix:
+$ postfix check
+
+To fix
+$ chgrp  postdrop  /usr/sbin/postqueue
+$ chgrp  postdrop  /usr/sbin/postdrop
+$ chgrp  postdrop  /var/spool/postfix/maildrop/
+$ chmod g+s /usr/sbin/postqueue
+$ chmod g+s /usr/sbin/postdrop
