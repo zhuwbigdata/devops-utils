@@ -16,7 +16,7 @@ response = kms_client.encrypt(
 )
 
 passwd_blob = response['CiphertextBlob']
-print('Encrypted ciphertext:', passwd_blob)
+print('Encrypted ciphertext:', base64.b64encode(passwd_blob))
 
 response = kms_client.decrypt(
     CiphertextBlob=passwd_blob
