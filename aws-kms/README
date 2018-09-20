@@ -1,0 +1,4 @@
+README
+$ python kmsencrypt.py
+Encrypted ciphertext: AQICAHirMBADcOJVqk5LpZkUqYWz9qY5FFU74wRtHgUE0FmTXwGmEkSwV6t+oMVYf7h5IEjIAAAAbjBsBgkqhkiG9w0BBwagXzBdAgEAMFgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMCxUUt9Df9nGSyP+vAgEQgCu6UKxCrGzVvDwdRejc1yFyUNymitARn/2sG5Qdq6du2KOBc5SKGsfTnaZ8
+Decrypted plaintext: myP@assw0rdA10NE
