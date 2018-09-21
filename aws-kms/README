@@ -1,4 +1,15 @@
 README
+Wayne Zhu
+
+Python
+Install boto3
 $ python kmsencrypt.py
 Encrypted ciphertext: AQICAHirMBADcOJVqk5LpZkUqYWz9qY5FFU74wRtHgUE0FmTXwGmEkSwV6t+oMVYf7h5IEjIAAAAbjBsBgkqhkiG9w0BBwagXzBdAgEAMFgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMCxUUt9Df9nGSyP+vAgEQgCu6UKxCrGzVvDwdRejc1yFyUNymitARn/2sG5Qdq6du2KOBc5SKGsfTnaZ8
 Decrypted plaintext: myP@assw0rdA10NE
+
+R
+https://github.com/cloudyr/aws.kms
+$ Rscript kmsencrypt.R
+[1] "AQICAHirMBADcOJVqk5LpZkUqYWz9qY5FFU74wRtHgUE0FmTXwGZtTKeYszF/hLxH4HoplvqAAAAbjBsBgkqhkiG9w0BBwagXzBdAgEAMFgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXwj4X1Ykp8SiAb8AgEQgCtoR+Q6rl4+xSDotY6zW71h/piWEwdPIpMGmN7RFfTJILIzvAtKLkLTFNyT"
+Loading required package: base64enc
+[1] "myP@assw0rdA10NE"
