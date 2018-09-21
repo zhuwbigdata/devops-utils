@@ -9,7 +9,8 @@ Decrypted plaintext: myP@assw0rdA10NE
 
 R
 https://github.com/cloudyr/aws.kms
-$ Rscript kmsencrypt.R
-[1] "AQICAHirMBADcOJVqk5LpZkUqYWz9qY5FFU74wRtHgUE0FmTXwGZtTKeYszF/hLxH4HoplvqAAAAbjBsBgkqhkiG9w0BBwagXzBdAgEAMFgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMRXwj4X1Ykp8SiAb8AgEQgCtoR+Q6rl4+xSDotY6zW71h/piWEwdPIpMGmN7RFfTJILIzvAtKLkLTFNyT"
-Loading required package: base64enc
+(R341) $ Rscript kmsencrypt.R
+[1] "Encrypted password:"
+[1] "AQICAHirMBADcOJVqk5LpZkUqYWz9qY5FFU74wRtHgUE0FmTXwEf6l078PJ5K+PQ08lcScgEAAAAbjBsBgkqhkiG9w0BBwagXzBdAgEAMFgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMNwQalEQEe3reKf4GAgEQgCuQTL3mGirB1GVONHuc3L8JxSFLcJBjIgdsAx3EDLRnqV2D75WmPdMn+ICG"
+[1] "Derypted password:"
 [1] "myP@assw0rdA10NE"
