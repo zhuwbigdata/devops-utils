@@ -1,5 +1,6 @@
 README
 Wayne Zhu
+This is for Python and R to handle AWS KMS encryption and decryption.
 
 Python
 Install boto3
