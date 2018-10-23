@@ -1,6 +1,7 @@
 README
 Wayne Zhu
-This is for Python and R to handle AWS KMS encryption and decryption.
+This is for Python and R to handle AWS KMS encryption and decryption. 
+Note: proper IAM roles have to be created and assigned to EC2 or ECS task.
 
 Python
 Install boto3
