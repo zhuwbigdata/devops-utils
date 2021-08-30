@@ -1,0 +1,2 @@
+Notes:
+Sign CSR only. Once CSR is signed by CA Root and Intermediate, signed host CER file is saved as /opt/cloudera/security/certs/${HOST}-signed.pem.

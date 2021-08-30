@@ -1,0 +1,8 @@
+---
+# Copy custom truststore to /opt/cloudera/security/jks/.
+- name: JKS path (input)
+  set_fact: jks_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/
+- debug: var=jks_path
+
+- name: Replicate truststore to /opt/cloudera/security/jks/
+  copy: src={{ ts_file }} dest={{ jks_path }}

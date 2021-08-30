@@ -1,0 +1,55 @@
+---
+- name: Create directories for root and intermediate CAs
+  file:
+    path: "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}"
+    state: directory
+    mode: 0755
+
+- name: Create directories for rootCAChain
+  file:
+    path: "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_CHAIN_PATH }}"
+    state: directory
+    mode: 0755
+
+- name: Create CA root private key
+  openssl_privatekey:
+    path: "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ ROOTCA_KEY_NAME }}"
+    passphrase: "{{ ROOTCA_KEY_PASSWD }}"
+    cipher: "{{ ROOTCA_KEY_CIPHER }}"
+    size:   "{{ ROOTCA_KEY_SIZE }}"
+    force: no
+
+- name: Create CA root cert
+  shell: openssl req -x509 -new -nodes -key "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ ROOTCA_KEY_NAME }}" -days "{{ ROOTCA_CERT_DAYS }}" -out "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ ROOTCA_CERT_NAME }}" -passin pass:"{{ ROOTCA_KEY_PASSWD }}" -subj "{{ ROOTCA_CERT_SUBJECT}}"; touch "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}"/rootca.generated creates="{{ playbook_dir }}/{{ ROOTCA_PATH }}"/rootca.generated
+
+- name: Create CA intermediate private key
+  openssl_privatekey:
+    path: "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ INTCA_KEY_NAME }}"
+    passphrase: "{{ INTCA_KEY_PASSWD }}"
+    cipher: "{{ INTCA_KEY_CIPHER }}"
+    size:   "{{ INTCA_KEY_SIZE }}"
+    force: no
+  when: USE_INTERCA_CERT
+
+- name: Create CA Intermediate CSR
+  shell: openssl req -new -subj "{{ INTCA_CERT_SUBJECT }}" -key "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ INTCA_KEY_NAME }}" -passin pass:"{{ INTCA_KEY_PASSWD }}" -out "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ INTCA_CERT_CSR }}"
+  when: USE_INTERCA_CERT
+
+- name: Sign CA intermediate cert
+  shell: openssl x509 -req -sha256 -in "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ INTCA_CERT_CSR }}" -days "{{ INTCA_CERT_DAYS }}"  -passin pass:"{{ ROOTCA_KEY_PASSWD }}" -CA "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ ROOTCA_CERT_NAME }}" -CAkey "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ ROOTCA_KEY_NAME }}" -CAcreateserial -out "{{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ INTCA_CERT_NAME }}"
+  register: sign_out
+  when: USE_INTERCA_CERT
+
+- name: Debug
+  debug: var=sign_out
+
+- name: Copy rootCA and intermediate cert.pem files to rootCA chain path
+  shell: "cp {{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/*.cert.pem {{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_CHAIN_PATH }}/"
+
+- name: CAT rootCA and intermediate cert.pem files to rootCA chain bundle
+  shell: "cat {{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ INTCA_CERT_NAME }} {{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ ROOTCA_CERT_NAME }}   > {{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_CHAIN_PATH }}/{{ ROOTCA_CHAIN }}"
+  when: USE_INTERCA_CERT
+
+- name: CAT rootCA and intermediate cert.pem files to rootCA chain bundle
+  shell: "cat {{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_PATH }}/{{ ROOTCA_CERT_NAME }}   > {{ playbook_dir }}/{{ BASE_DIR }}/{{ ROOTCA_CHAIN_PATH }}/{{ ROOTCA_CHAIN }}"
+  when: not USE_INTERCA_CERT

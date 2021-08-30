@@ -1,0 +1,33 @@
+---
+- name: Set keystore file
+  set_fact:
+    keystore_file_path: "{{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/{{ SERVER_FQDN }}{{ keystore_file }}"
+
+- name: Debug VAR=keystore_file
+  debug: var=keystore_file_path
+
+- name: Set FQHN using host alias
+  set_fact:
+    my_fqhn:  "{{ SERVER_FQDN }}"
+
+- name: Debug VAR=my_fqhn
+  debug: var=my_fqhn
+
+- name: Check keystore file stat
+  stat:
+    path: "{{ keystore_file_path }}"
+  register: file_path
+
+- debug: msg="WARNING Keystore {{ keystore_file }} already exists and will be reused."
+  when: file_path.stat.exists == true
+
+- name: Generate Staging JKS if it does NOT exist.
+  command: "{{ java_home }}/bin/keytool -genkey -alias {{ SERVER_FQDN  }} -keyalg RSA -keystore {{ keystore_file_path }} -keysize {{ key_size }} -dname 'CN={{ my_fqhn }}, {{ dn_suffix }}' -storepass {{ ks_pwd }} -keypass {{ ks_pwd }}"
+  when: file_path.stat.exists == false
+
+- name: Check Staging JKS
+  command: " {{ java_home }}/bin/keytool -list -v -keystore {{ keystore_file_path }} -storepass {{ ks_pwd }}"
+  register: jks_list
+
+- name: Debug VAR dir_created1_1
+  debug: var=jks_list

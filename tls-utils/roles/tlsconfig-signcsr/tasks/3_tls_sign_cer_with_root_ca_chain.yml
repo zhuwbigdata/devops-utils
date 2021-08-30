@@ -1,0 +1,35 @@
+---
+
+- name: CERT input file
+  set_fact: cert_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ cert_file }}
+- debug: var=cert_path
+
+- name: CSR input file
+  set_fact: csr_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ csr_file }}
+- debug: var=csr_path
+
+- name: Check if CERT file exists
+  stat: path="{{ cert_path }}"
+  register: file_path
+
+- debug: msg="WARNING There's already a signed CERT under {{ cert_path }}. It will be reused."
+  when: file_path.stat.exists == true
+
+
+
+
+- name: Sign CSR without SAN
+  shell: openssl x509 -req -in {{ csr_path }} -CA {{ playbook_dir }}/{{ base_dir }}/{{ rootca_path }}/{{ rootca_cert }} -CAkey {{ playbook_dir }}/{{ base_dir }}/{{ rootca_path }}/{{ rootca_key }} -CAcreateserial -out {{ cert_path }} -days {{ rootca_cert_days }} -passin pass:{{ rootca_passwd }} 
+  when:
+    - file_path.stat.exists == false
+  register: sign_out
+
+
+- name: Debug sign_out
+  debug: var=sign_out
+
+- name: "Signed CERT is created as {{ cert_path }}"
+  command: "{{ java_home }}/bin/keytool -printcert -file {{ cert_path }}"
+
+- name: Debug VAR dir_created
+  debug: var=dir_created

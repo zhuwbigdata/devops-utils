@@ -1,0 +1,6 @@
+Create softlinks as follows:  
+drwxr-xr-x   5 waynezhu  staff   160 Jan 25 11:17 .
+drwxr-xr-x  63 waynezhu  staff  2016 Feb 14 15:19 ..
+lrwxr-xr-x   1 waynezhu  staff    23 Jan 25 11:13 IntermediateCA.cert.pem -> miop/IntermidiateCA.cer
+drwxr-xr-x   4 waynezhu  staff   128 Jan 25 11:48 miop
+lrwxr-xr-x   1 waynezhu  staff    15 Jan 25 11:11 rootCA.cert.pem -> miop/RootCA.cer

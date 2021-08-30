@@ -1,0 +1,3 @@
+---
+- name: tls_create_csr
+  include_tasks: 3_tls_sign_cer_with_root_ca_chain.yml

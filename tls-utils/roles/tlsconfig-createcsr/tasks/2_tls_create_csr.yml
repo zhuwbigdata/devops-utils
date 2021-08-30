@@ -1,0 +1,27 @@
+---
+- name: "regestering keystore_file"
+  command: "echo {{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/{{ SERVER_FQDN }}{{ keystore_file }}"
+  register: keystore_file_var
+
+- name: "regestering csr_file_variable"
+  command: "echo {{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ csr_file }}"
+  register: csr_file_var
+
+- stat: path="{{ csr_file_var.stdout }}"
+  register: file_path
+
+- debug: msg="WARNING CSR file {{ csr_file_var.stdout }} already exists and will be reused."
+  when: file_path.stat.exists == true
+
+
+- name: Create CSR without extension if the specified {{ csr_file_var.stdout }} doesnot exists
+  command: "{{ java_home }}/bin/keytool -certreq -alias {{ SERVER_FQDN }} -keystore {{ keystore_file_var.stdout }} -file {{ csr_file_var.stdout }} -ext EKU=serverAuth,clientAuth -storepass {{ ks_pwd }} -keypass {{ ks_pwd }}"
+  when:
+    - file_path.stat.exists == false
+  register: dir_created
+
+- name: "Staging JKS is created as {{ keystore_file_var }}"
+  command: "{{ java_home }}/bin/keytool -printcertreq -file {{ csr_file_var.stdout }}"
+
+- name: Debug VAR dir_created
+  debug: var=dir_created

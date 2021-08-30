@@ -1,0 +1,2 @@
+Notes:
+Create Root CA and Intermediate CAs only. As the best practise, we should not use self-signed internal root CA.

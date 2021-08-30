@@ -1,0 +1,86 @@
+---
+# Check if md5 on CA signed certificate /opt/cloudera/certs/$host-signed.pem
+# matches with md5 on CSR /opt/cloudera/certs/$host-unsigned.csr
+
+
+- name: CERT input file
+  set_fact: cert_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ cert_file }}
+
+- name: Debug VAR=cert_path
+  debug: var=cert_path
+
+- name: Command stat on CERT input file
+  stat: path={{ cert_path }}
+  register: pcert
+
+- name: Check CERT input file stat
+  fail: msg="{{ cert_path }} NOT FOUND"
+  when: pcert.stat.exists == false
+
+- name: Check md5 on CERT file
+  shell: "openssl x509 -noout -modulus -in {{ cert_path }} | openssl md5"
+  register: cert_md5
+
+- name: Debug VAR=cert_md5
+  debug: var=cert_md5.stdout
+
+- name: CSR input file
+  set_fact: csr_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ csr_file }}
+- debug: var=csr_path
+
+- name: Debug VAR=csr_path
+  debug: var=csr_path
+
+- name: CSR input file
+  stat: path={{ csr_path }}
+  register: pcsr
+
+- name: Check CSR input file stat
+  fail: msg="{{ csr_path }} NOT FOUND"
+  when: pcsr.stat.exists == false
+
+- name: Check md5 on CSR file
+  shell: "openssl req -noout -modulus -in {{ csr_path }} | openssl md5"
+  register: csr_md5
+
+- name: Debug var=csr_md5
+  debug: var=csr_md5.stdout
+
+- name: Fail if CSR and CERT do NOT match on md5
+  fail: msg="md5 on csr and cert don't match"
+  when: csr_md5.stdout != cert_md5.stdout
+
+- name: Print CERT {{ SERVER_FQDN }}{{ cert_file }}
+  command: "{{ java_home }}/bin/keytool -printcert -file {{ cert_path }}"
+  register: ktcert
+
+- name: Verify certs against root CA chain
+  shell: "openssl verify -verbose -CAfile  {{ base_dir}}/{{ rootca_chain_path }}/{{ rootca_chain }} {{ cert_path }}"
+  register: cert_ca1
+  when: USE_INTERCA_CERT
+
+- name: Debug VAR=cert_ca1
+  debug: var=cert_ca1
+  when: USE_INTERCA_CERT
+
+- name: Check CERT input file stat
+  fail: msg="{{ cert_path }} NOT MATCH with CA chain"
+  when:
+    - USE_INTERCA_CERT
+    - "'OK' not in cert_ca1.stdout"
+
+- name: Verify certs against root CA file
+#  shell: "openssl verify -verbose -CAfile {{ base_dir}}/{{ rootca_path }}/{{ ROOTCA_CERT_CHAIN }} {{ cert_path }}"
+  shell: "openssl verify -verbose -CAfile {{ base_dir}}/{{ rootca_path }}/{{ rootca_cert }} {{ cert_path }}"
+  register: cert_ca2
+  when: not USE_INTERCA_CERT
+
+- name: Debug VAR=cert_ca2
+  debug: var=cert_ca2
+  when: not USE_INTERCA_CERT
+
+- name: Check CERT input file stat
+  fail: msg="{{ cert_path }} NOT MATCH with CA chain"
+  when:
+    - not USE_INTERCA_CERT
+    - "'OK' not in cert_ca2.stdout"

@@ -1,0 +1,27 @@
+---
+- name: Create custom truststore
+  include_tasks: 2_tls_create_custom_trustore.yml
+
+- name: Check CSR and CERT match
+  include_tasks: 3_tls_check_cer_signed_by_root_ca.yml
+
+
+- name: Check CSR and CERT match
+  include_tasks: 3_tls_check_cer_signed_by_root_ca.yml
+
+- name: Extract Unsigned private key from JAVA Keystore using PKCS12
+  include_tasks: 4_tls_generate_unsigned_private_key.yml
+
+- name: Sign private key by CA chain and import CERT to signed JKS
+  include_tasks: 5_tls_create_signed_jks.yml
+
+
+- name: Extract private key and server certificate from signed JKS
+  include_tasks: 6_tls_export_from_signed_jks.yml
+
+- name: Import truststore
+  include_tasks: 7_tls_import_to_truststore_all.yml
+
+
+- name: Copy truststore for distribution
+  include_tasks: 8_copy_chained_ca.yml

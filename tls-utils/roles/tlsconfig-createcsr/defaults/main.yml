@@ -1,0 +1,45 @@
+---
+base_dir: "{{ BASE_DIR }}"
+staging: " {{ Staging }}"
+
+staging_base: "{{ STAGING_BASE }}"
+jks_staging: "{{ JKS_STAGING }}"
+x509_staging: "{{ X509_STAGING }}"
+certs_staging: "{{ CERTS_STAGING }}"
+
+java_home: "{{ JAVA_HOME }}"
+
+keystore_file: "{{ KEYSTORE_FILE }}"
+key_size: "{{ KEY_SIZE }}"
+my_fqhn: "{{ MY_FQHN }}"
+dn_suffix: "{{ DN_SUFFIX }}"
+ks_pwd: "{{ KS_PWD }}"
+
+csr_file: "{{ CSR_FILE }}"
+cert_file: "{{ CERT_FILE }}"
+
+#rootca_cert: "{{ ROOTCA_CERT_NAME }}"
+rootca_cert: "{{ ROOTCA_CERT_CHAIN }}"
+rootca_key:  "{{ ROOTCA_KEY_NAME }}"
+rootca_passwd: "{{ ROOTCA_KEY_PASSWD }}"
+
+unsigned_privarte_key_file: "{{ UNSIGNED_PRIVARTE_KEY_FILE }}"
+keystore_file_p12: "{{ KEYSTORE_FILE_P12 }}"
+rootca_alias: "{{ ROOTCA_ALIAS }}"
+
+
+jks_dest: "{{  JKS_DEST }}"
+x509_dest: "{{  X509_DEST }}"
+cacerts_dest: "{{  CACERTS_DEST }}"
+
+keystore_file_signed_p12: "{{ KEYSTORE_FILE_SIGNED_P12 }}"
+
+host_cert_file : "{{ HOST_CERT_FILE }}"
+host_key_file : "{{ HOST_KEY_FILE }}"
+host_key_nopw_file: "{{ HOST_KEY_NOPW_FILE }}"
+
+ts_file: "{{ TS_FILE }}"
+ts_pwd: "{{ TS_PWD }}"
+
+
+keystore_signed_file: "{{ KEYSTORE_SIGNED_FILE }}"

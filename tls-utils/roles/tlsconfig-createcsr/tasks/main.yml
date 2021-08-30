@@ -1,0 +1,9 @@
+---
+- name: Create directories
+  include_tasks: 0_tls_create_dir.yml
+
+- name: Create Staging JKS as  keystore.jks
+  include_tasks: 1_tls_create_jks.yml
+
+- name: Create unsigned CSR file
+  include_tasks: 2_tls_create_csr.yml 

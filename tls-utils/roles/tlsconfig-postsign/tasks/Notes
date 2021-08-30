@@ -1,0 +1,2 @@
+Notes:
+Once CSR files are created and signed by Root CA, we can copy signed host CER file to /opt/cloudera/security/certs/${HOST}-signed.pem and then run this role.  The CER can be signed by a single Root CA or a intermeditate CA. 

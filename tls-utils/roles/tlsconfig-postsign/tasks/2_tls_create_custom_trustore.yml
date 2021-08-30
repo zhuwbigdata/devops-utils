@@ -1,0 +1,25 @@
+---
+# Export RootCA chain to custom truststore in truststore directory
+
+- name: Create truststore directory
+  file: 
+    path: "{{ base_dir }}/{{ ts_base }}"
+    state: directory
+  
+- name: Remove existing truststore file
+  file: path={{ ts_file }} state=absent
+  
+- name: Create empty trustore in place
+  shell: "cp files/tls/truststore/custom.truststore {{ ts_file }}"
+
+- name: Import RootCA chain to custom truststore
+  command: "{{ java_home }}/bin/keytool -noprompt -importcert -trustcacerts -alias {{ item.alias }} -file {{ base_dir}}/{{ rootca_path }}/{{ item.name }} -keystore {{ ts_file }} -storepass {{ ts_pwd }}"
+  with_items:
+    - "{{ rootca_certs }}"
+  register: pout
+- debug: var=pout
+
+- name: List all entries in truststore
+  command: "{{ java_home }}/bin/keytool  -list -v -keystore {{ ts_file }} -storepass {{ ts_pwd }}"
+  register: pout
+- debug: var=pout

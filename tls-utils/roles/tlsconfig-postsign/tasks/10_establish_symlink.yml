@@ -1,0 +1,34 @@
+---
+
+
+- name: remove if keystore.jks is present
+  file: path="{{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/keystore.jks" state=absent
+
+- name: link jks
+  shell: "ln -s {{ SERVER_FQDN }}-signed-keystore.jks keystore.jks"
+  args:
+    chdir: "{{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}"
+
+- name: remove if cert.pem is present
+  file: path="{{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/cert.pem" state=absent
+
+- name: link  cert.pem in certs
+  shell: "ln -s {{ SERVER_FQDN }}-cert.pem cert.pem"
+  args:
+    chdir: "{{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/"
+
+- name: remove if key.pem is present
+  file: path="{{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}/key.pem" state=absent
+
+- name: remove if keynopw.pem is present
+  file: path="{{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}/keynopw.pem" state=absent
+
+- name: link SERVER_FQDN-key.pem to key.pem
+  shell: "ln -s {{ SERVER_FQDN}}-key.pem key.pem"
+  args:
+    chdir: "{{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}"
+
+- name: link keynopw.pem
+  shell: "ln -s {{ SERVER_FQDN }}-keynopw.pem keynopw.pem"
+  args:
+    chdir: "{{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}"

@@ -1,0 +1,8 @@
+---
+- name: Create directories for jks,certs, x509 hosts
+  file:
+   path: "{{ base_dir }}/{{ SERVER_FQDN }}/{{ item }}"
+   state: directory
+   mode: 0755
+  with_items:
+    - [ "{{ staging_base }}", "{{ jks_staging}}", "{{ x509_staging }}","{{ certs_staging }}" ]

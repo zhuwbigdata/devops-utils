@@ -1,0 +1,69 @@
+---
+# Export both private key and public key
+# from original JKS /opt/cloudera/jks/$host-keystore.jks to
+# staging keystore /opt/cloudera/jks/$host-keystore.p12;
+# then extract private key to /opt/cloudera/x509/$host-unsigned-key.pem
+# Check if md5 on CA signed certificate /opt/cloudera/certs/$host-cert.pem
+# matches with md5 on CSR /opt/cloudera/certs/$host-unsigned.csr
+
+- name: Original JKS path (input)
+  set_fact: jks_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/{{ SERVER_FQDN }}{{ keystore_file }}
+- debug: var=jks_path
+
+- name: Command stat on original JKS file
+  stat: path={{ jks_path }}
+  register: pjks
+
+- name: Check original JKS file stat
+  fail: msg="{{ jks_path }} NOT FOUND"
+  when: pjks.stat.exists == false
+
+- name: Unsigned private key path (output)
+  set_fact: unsigned_private_key_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}/{{ SERVER_FQDN }}{{ unsigned_privarte_key_file }}
+
+- debug: var=unsigned_private_key_path
+
+- name: Staging unsigned p12 keystore path (output, contains only private key)
+  set_fact: p12ks_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/{{ SERVER_FQDN }}{{ keystore_file_p12 }}
+- debug: var=p12ks_path
+
+- name: Remove unsigned private key file (always)
+  file: path={{ unsigned_private_key_path }} state=absent
+
+- name: Remove p12 keystore file (always)
+  file: path={{ p12ks_path }} state=absent
+
+- name: Import private key and cerficate into staging PKCS12 keystore from original JKS
+  command: "{{ java_home }}/bin/keytool -importkeystore -srckeystore {{ jks_path }} -srcstorepass {{ ks_pwd }} -srckeypass {{ ks_pwd }} -destkeystore {{ p12ks_path }} -deststoretype PKCS12 -srcalias {{ SERVER_FQDN }} -deststorepass {{ ks_pwd }} -destkeypass {{ ks_pwd }}"
+
+- name: Generate unsigned private key from staging PKCS12 keystore
+  command: "openssl pkcs12 -in {{ p12ks_path }} -passin pass:{{ ks_pwd }} -nocerts -out {{ unsigned_private_key_path }} -passout pass:{{ ks_pwd }}"
+
+- name: Remove staging PKCS12 keystore file
+  file: path={{ p12ks_path }} state=absent
+
+- name: Check md5 on unsigned private key on step 4
+  shell: "openssl rsa -noout -modulus -in {{ unsigned_private_key_path }} -passin pass:{{ ks_pwd }} | openssl md5"
+  register: key_md5
+
+
+- name: CERT input file
+  set_fact: cert_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ cert_file }}
+
+- debug: var=cert_path
+
+- name: Command stat on CERT input file
+  stat: path={{ cert_path }}
+  register: pcert
+
+- name: Check CERT input file stat
+  fail: msg="{{ cert_path }} NOT FOUND"
+  when: pcert.stat.exists == false
+
+- name: Check md5 on CERT file on step 4
+  shell: "openssl x509 -noout -modulus -in {{ cert_path }} | openssl md5"
+  register: cert_md5
+
+- name: Check if PRIVATE KEY and CERT match on md5
+  fail: msg="md5 on private key and cert don't match"
+  when: key_md5.stdout != cert_md5.stdout

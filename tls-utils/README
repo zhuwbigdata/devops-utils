@@ -1,0 +1,110 @@
+README
+By Wayne Zhu
+Reference:
+https://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_managing_software.html
+https://www.cloudera.com/documentation/enterprise/latest/topics/installation_installation.html
+https://github.com/trustedanalytics/ansible-playbooks
+
+Use Path B installation method
+https://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_install_path_b.html
+Use MySQL for backend DB - scm, hive, etc.
+https://www.cloudera.com/documentation/enterprise/latest/topics/cm_ig_mysql.html#cmig_topic_5_5_1
+
+Installation Method: parcel
+
+Notes:
+1. How to clean up MariaDB?
+$ sudo systemctl stop mariadb
+$ sudo systemctl disable mariadb
+$ sudo systemctl status mariadb
+$ sudo yum remove mariadb
+$ sudo yum remove mariadb-server
+$ sudo rm -rf /var/lib/mysql/
+$ sudo rm -f /opt/mysql/* (optional for ansible only)
+
+2. How to configure sudoers?
+$ ansible -i archive/ config-sudoers.yml
+And update environment/$ENV/hosts with user kogentix_ops and private key as files/.ssh/id_rsa.
+
+3. Enable CM API debug
+http://cloudera.github.io/cm_api/docs/debugging-tips/#table-of-contents
+
+Pre-execution Instructions:
+1. (Optional) Configure SUDO users
+$ ansible-playbook -i environment/$ENV/ config-sudoers.yml
+
+2. (Optional) Configure Infrastructure Services - SSSD, KRB, etc.
+$ ansible-playbook -i environment/$ENV/ config-infra-*.yml (pick one)
+
+3. (Optional) Configure MySQL/MariaDB standalone or HA
+   Need to copy mysql-5.7.19-1.el7.x86_64.rpm-bundle.tar to files/mysql directory.
+$ ansible-playbook -i environment/$ENV/ config-mysql.yml
+OR
+$ ansible-playbook -i environment/$ENV/ config-mariadb.yml
+
+4. (Optional) Configure NGINX/HTTPD server for repository
+$ ansible-playbook -i environment/$ENV/ config-repo.yml
+You have to log in Cloudera support site to download KTS and KMS RPMs.
+
+5. (Optional) Install MITKDC
+$ ansible-playbook -i environment/$ENV/ config-infra-mitkdc.yml
+
+6. Install JDK if not installed already.
+$ ansible-playbook -i environment/$ENV/ config-jdk.yml
+
+
+
+Basic Installation Instructions:
+1. Configuration
+Configure environment/$ENV/ for the cluster
+
+2. Install RPMs and JDBC jars
+   (No binary in git, need to down JDBC jars to role rpms/files/)
+$ ansible-playbook -i environment/$ENV/ config-packages.yml
+
+3. Install Cloudera Manager/Agent on CM host and
+$ ansible-playbook -i environment/$ENV/ config-cm.yml
+
+4. Install CDH components via Cloudera Manager API
+$ ansible-playbook -i environment/$ENV/ config-cdh.yml
+
+5. Install Spark2 as add-on services (optional, JDK 1.8 only)
+
+6. Generate Root CA (optional, only for internal CA).
+   Replace generated CA with official CA.
+$ ansible-playbook -i environment/starcom/ tls-create-rootca.yml
+
+7. Generate TLS CSR (upload to CA for signing)
+$ ansible-playbook -i environment/starcom/ tls-create-csr.yml
+
+8. Sign CSR with Root CA (optional, only for internal CA).
+   Replace generate certificates with the certificates signed by official CA.
+$ ansible-playbook -i environment/starcom/ tls-sign-csr.yml
+
+9. Install rootCA chains
+$ cd tlscerts/rootCACerts
+Create softlink to rootCA and intermediate CAs Hashes.
+$ ln -s rootCA.cert.pem $( openssl x509 -hash -noout -in rootCA.cert.pem ).0
+$ ln -s intCA.cert.pem  $( openssl x509 -hash -noout -in intCA.cert.pem ).0
+$ cat intCA.cert.pem rootCA.cert.pem  > chainedCA.cert.pem
+Modify tls.yml in environment configuration accordingly.
+
+10. Post sign the certificates
+$ ansible-playbook -i environment/starcom/ tls-post-sign.yml
+
+KTS and KMS installation Instraction
+Configure entropy on KTS and KMS hosts:
+$ ansible-playbook -i environment/starcom/ config-infra-ktskms.yml
+
+
+How to Configure Browsers for Kerberos Authentication
+https://www.cloudera.com/documentation/enterprise/latest/topics/cdh_sg_browser_access_kerberos_protected_url.html
+
+
+Authorization
+1. HDFS supergroup Change
+https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_hdfs_su_princ_s15.html
+
+2. Sentry ADMIN group
+https://www.cloudera.com/documentation/enterprise/latest/topics/cm_sg_sentry_service.html
+https://www.cloudera.com/documentation/enterprise/latest/topics/sg_sentry_service_config.html#concept_z5b_42s_p4__section_vrc_1dk_55

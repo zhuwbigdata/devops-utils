@@ -1,0 +1,21 @@
+---
+- name: Chained CA CERT file (output)
+  set_fact: chainedca_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ rootca_chain }}
+
+- debug: var=chainedca_path
+
+
+- name: Remove Chained CA CERT file (output)
+  file: path={{ chainedca_path }} state=absent
+
+- name:
+  file: path={{ chainedca_path }} state=touch mode="u=rw,g=r,o=r"
+
+- name: Copy rootCA and intermediate CA into single file
+  shell: "cat {{ base_dir }}/{{ rootca_chain_path }}/{{ item2.name }} >> {{ chainedca_path }}"
+  with_items:
+    - "{{ rootca_certs }}"
+  loop_control:
+    loop_var: item2
+  register: pout
+- debug: var=pout

@@ -1,0 +1,6 @@
+---
+- name: Create SSL/TLS certification with RootCA
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - tlsconfig-createcsr

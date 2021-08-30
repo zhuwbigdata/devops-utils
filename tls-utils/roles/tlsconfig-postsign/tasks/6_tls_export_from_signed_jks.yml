@@ -1,0 +1,78 @@
+---
+# Export both private key and public key
+# from signed JKS /opt/cloudera/jks/$host-keystore.jks to
+# staging keystore /opt/cloudera/jks/$host-keystore.p12;
+# then extract private key to /opt/cloudera/x509/$host-unsigned-key.pem
+# Check if md5 on CA signed certificate /opt/cloudera/certs/$host-cert.pem
+# matches with md5 on CSR /opt/cloudera/certs/$host-unsigned.csr
+
+- name: Unsigned private key path (output)
+  set_fact: unsigned_private_key_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}/{{ SERVER_FQDN }}{{ unsigned_privarte_key_file }}
+- debug: var=unsigned_private_key_path
+
+- name: HOST CERT input file (outpt)
+  set_fact: host_cert_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ host_cert_file }}
+- debug: var=host_cert_path
+
+- name: CERT file (input)
+  set_fact: cert_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ certs_staging }}/{{ SERVER_FQDN }}{{ cert_file }}
+- debug: var=cert_path
+
+- name: HOST private key file (outpt)
+  set_fact: host_key_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}/{{ SERVER_FQDN }}{{ host_key_file }}
+- debug: var=host_key_path
+
+- name: HOST private key w/o password file (outpt)
+  set_fact: host_key_nopw_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ x509_staging }}/{{ SERVER_FQDN }}{{ host_key_nopw_file }}
+- debug: var=host_key_nopw_path
+
+- name: Staging PKCS12 keystore file (outpt)
+  set_fact: p12ks_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/{{ SERVER_FQDN }}{{ keystore_file_p12 }}
+- debug: var=p12ks_path
+
+- name: Remove staging PKCS12 keystore file
+  file: path={{ p12ks_path }} state=absent
+
+- name: Signed JKS keystore file (outpt)
+  set_fact: signed_jks_path={{ base_dir }}/{{ SERVER_FQDN }}/{{ jks_staging }}/{{ SERVER_FQDN }}{{ keystore_signed_file }}
+
+- debug: var=signed_jks_path
+
+- name: Import private key from signed JKS to staging PKCS12 keystore  (actually same as original)
+  command: "{{ java_home }}/bin/keytool -importkeystore -srckeystore {{ signed_jks_path }} -srcstorepass {{ ks_pwd }} -srckeypass {{ ks_pwd }} -destkeystore {{ p12ks_path }} -deststoretype PKCS12 -srcalias {{ SERVER_FQDN }} -deststorepass {{ ks_pwd }} -destkeypass {{ ks_pwd }}"
+  register: pout
+- debug: var=pout
+
+- name: Export host CERT from staging PKCS12 keystore
+  command: "openssl pkcs12 -in {{ p12ks_path }} -passin pass:{{ ks_pwd }} -nokeys -out {{ host_cert_path }}"
+  register: pout
+- debug: var=pout
+
+- name: Export private key from staging PKCS12 keystore
+  command: "openssl pkcs12 -in {{ p12ks_path }} -passin pass:{{ ks_pwd }} -nocerts -out {{ host_key_path }} -passout pass:{{ ks_pwd }}"
+  register: pout
+- debug: var=pout
+
+- name: Remove  Staging p12 keystore file
+  file: path={{ p12ks_path }} state=absent
+
+- name: Generate host private key without password
+  command: "openssl rsa -in {{ host_key_path }} -passin pass:{{ ks_pwd }} -out {{ host_key_nopw_path }}"
+  register: pout
+
+- debug: var=pout
+
+- name: md5 on host private key without password
+  shell: "openssl rsa -noout -modulus -in {{ host_key_nopw_path }} | openssl md5"
+  register: host_key_nopass_md5
+
+- name: Check md5 on private key
+  shell: "openssl rsa -noout -modulus -in {{ unsigned_private_key_path }} -passin pass:{{ ks_pwd }} | openssl md5"
+  register: key_md5
+
+- name: "Check if unsigned and no-password PRIVATE KEYs  match"
+  fail: msg="md5 on private key and cert don't match"
+  when: key_md5.stdout != host_key_nopass_md5.stdout
+
+- name: Remove unsinged private key file
+  file: path={{ unsigned_private_key_path }} state=absent

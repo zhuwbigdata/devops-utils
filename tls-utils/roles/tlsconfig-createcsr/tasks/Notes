@@ -1,0 +1,3 @@
+Notes:
+Create CSR only. Once CSR is signed by CA Root and Intermediate, Copy signed host CER file to /opt/cloudera/security/certs/${HOST}-signed.pem and then run onsign role.
+

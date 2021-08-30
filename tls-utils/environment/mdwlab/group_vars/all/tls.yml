@@ -1,0 +1,92 @@
+---
+# rootCA
+ROOTCA_CERT_ALIAS: rootca
+ROOTCA_CERT_NAME:  rootCA.cert.pem
+ROOTCA_CERT_SUBJECT: "/C=US/ST=IL/L=CHICAGO/O=MDWLAB/OU=DEVOPS/CN=MDWLAB-ROOTCA"
+ROOTCA_CERT_DAYS: 3650
+ROOTCA_KEY_NAME:  rootCA.key.pem
+ROOTCA_KEY_PASSWD: MDWL@B4728
+ROOTCA_KEY_CIPHER: auto
+ROOTCA_KEY_SIZE:   4096
+
+USE_INTERCA_CERT: true
+INTCA_CERT_CSR:   intCA.csr
+INTCA_CERT_SUBJECT: "/C=US/ST=IL/L=CHICAGO/O=MDWLAB/OU=DEVOPS/CN=MDWLAB-INTCA"
+INTCA_CERT_ALIAS: intca
+INTCA_CERT_NAME:  intCA.cert.pem
+INTCA_CERT_DAYS: 1825
+INTCA_KEY_NAME:  intCA.key.pem
+INTCA_KEY_PASSWD: mdwl@b4728
+INTCA_KEY_CIPHER: auto
+INTCA_KEY_SIZE:   4096
+
+#ROOTCA_CERT_CHAIN: chainedCA.cert.pem
+
+ROOTCA_PATH: rootCA
+ROOTCA_CHAIN_PATH: rootCACerts
+ROOTCA_CHAIN: chainedCA.cert.pem
+ROOTCA_CERTS:
+ -  alias: rootca
+    name: rootCA.cert.pem
+ -  alias: intca1
+    name: intCA.cert.pem
+
+
+# Derived
+ROOTCA_CERT: "rootCA/{{ ROOTCA_CERT_NAME }}"
+#ROOTCA_KEY: "rootCA/{{ ROOTCA_KEY_NAME }}"
+ROOTCA_CERT_DEST: "{{ CACERTS_DEST }}/{{ ROOTCA_CERT_NAME }}"
+# TLS Certificates
+BASE_DIR: tlscerts
+BASE_TARGET_DIR: /
+STAGING_BASE: ""
+
+JKS_STAGING: "{{ STAGING_BASE }}/jks"
+X509_STAGING: "{{ STAGING_BASE }}/x509"
+CERTS_STAGING: "{{ STAGING_BASE }}/certs"
+
+SERVER_FQDN: "unravel-az-dev.mdwlab.com"
+
+
+
+JAVA_HOME: "/usr"
+MY_DOMAIN: .mdwlab.com
+KEYSTORE_FILE: "-keystore.jks"
+KEY_SIZE: 4096
+DN_SUFFIX: "C=US, ST=IL, L=CHICAGO, O=MDWLAB, OU=DEVOPS"
+KS_PWD:  changeit
+
+
+#CSR
+CSR_FILE: "-unsigned.csr"
+#CERT_FILE
+CERT_FILE: "-signed.pem"
+
+
+
+KEYUSAGE_CONF: 'extendedKeyUsage=serverAuth,clientAuth'
+
+
+KEYSTORE_FILE_P12: "-keystore.p12"
+
+DEST_BASE: "/opt/cloudera/security"
+# Destination
+JKS_DEST: "{{ DEST_BASE }}/jks"
+X509_DEST: "{{ DEST_BASE }}/x509"
+CACERTS_DEST: "{{ DEST_BASE }}/ca-certs"
+
+UNSIGNED_PRIVARTE_KEY_FILE: "-unsigned-key.pem"
+
+KEYSTORE_SIGNED_FILE: "-signed-keystore.jks"
+
+TS_BASE: "truststore"
+TS_FILE: "{{ BASE_DIR }}/{{ TS_BASE }}/custom.truststore"
+TS_FNAME: "truststore.jks"
+TS_PWD: changeit
+
+HOST_CERT_FILE: "-cert.pem"
+HOST_KEY_FILE: "-key.pem"
+HOST_KEY_NOPW_FILE: "-keynopw.pem"
+KEYSTORE_FILE_SIGNED_P12: "-signed-keystore.p12"
+
+TLC_CONF: "/etc/pki/tls/openssl.cnf"
